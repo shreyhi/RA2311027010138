@@ -4,11 +4,11 @@ import { Log } from "../../logging_middleware/logger";
 function App() {
 
   useEffect(() => {
-    Log("frontend", "info", "page", "App loaded successfully");
+    Log("frontend", "info", "page", "App loaded");
   }, []);
 
   const handleClick = () => {
-    Log("frontend", "info", "component", "Button clicked by user");
+    Log("frontend", "info", "component", "Button clicked");
   };
 
   return (
