@@ -1,6 +1,10 @@
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## UI Output
+
+![UI Screenshot](./UI.png)
+![API Screenshot](./API.png)
 
 ## Available Scripts
 

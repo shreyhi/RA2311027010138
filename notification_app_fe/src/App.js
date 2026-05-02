@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchNotifications } from "./api";
 import { Log } from "./logger";
+import "./App.css";
 
 function App() {
   const [notifications, setNotifications] = useState([]);
@@ -10,90 +11,101 @@ function App() {
 
   const ITEMS_PER_PAGE = 5;
 
-  // 🔹 Fetch data
   useEffect(() => {
-  const loadData = async () => {
-    try {
-      const data = await fetchNotifications();
+    const loadData = async () => {
+      try {
+        const data = await fetchNotifications();
+        const notificationsArray = Array.isArray(data) ? data : [];
 
-      // api.js already returns the notifications array
-      const notificationsArray = Array.isArray(data) ? data : [];
+        if (!notificationsArray.length) {
+          Log("frontend", "warn", "api", "No notifications received");
+        } else {
+          Log("frontend", "info", "api", "Fetched notifications successfully");
+        }
 
-      console.log("Notifications Array:", notificationsArray);
-
-      if (!notificationsArray.length) {
-        Log("frontend", "warn", "api", "No notifications received");
-      } else {
-        Log("frontend", "info", "api", "Fetched notifications successfully");
+        setNotifications(notificationsArray);
+        setFiltered(notificationsArray);
+      } catch (err) {
+        Log("frontend", "error", "api", "Failed to fetch notifications");
       }
+    };
 
-      setNotifications(notificationsArray);
-      setFiltered(notificationsArray);
-    } catch (err) {
-      console.error("Fetch Error:", err);
-      Log("frontend", "error", "api", "Failed to fetch notifications");
-    }
-  };
+    loadData();
+  }, []);
 
-  loadData();
-}, []);
-
-  // 🔹 Filter logic
   useEffect(() => {
-    let result;
-
-    if (type === "All") {
-      result = notifications;
-    } else {
-      result = notifications.filter((n) => n.Type === type);
-    }
+    let result =
+      type === "All"
+        ? notifications
+        : notifications.filter((n) => n.Type === type);
 
     setFiltered(result);
     setPage(1);
   }, [type, notifications]);
 
-  // 🔹 Pagination
   const start = (page - 1) * ITEMS_PER_PAGE;
   const paginated = filtered.slice(start, start + ITEMS_PER_PAGE);
 
+  const getTypeColor = (type) => {
+    switch (type) {
+      case "Placement":
+        return "#4CAF50";
+      case "Result":
+        return "#2196F3";
+      case "Event":
+        return "#FF9800";
+      default:
+        return "#999";
+    }
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Notifications</h2>
+    <div className="container">
+      <h2 className="title">📢 Notifications</h2>
 
-      {/* FILTER */}
-      <select value={type} onChange={(e) => setType(e.target.value)}>
-        <option value="All">All</option>
-        <option value="Placement">Placement</option>
-        <option value="Result">Result</option>
-        <option value="Event">Event</option>
-      </select>
+      <div className="toolbar">
+        <select value={type} onChange={(e) => setType(e.target.value)}>
+          <option value="All">All</option>
+          <option value="Placement">Placement</option>
+          <option value="Result">Result</option>
+          <option value="Event">Event</option>
+        </select>
+      </div>
 
-      {/* LIST */}
       {paginated.length === 0 ? (
-        <p style={{ marginTop: "20px" }}>No notifications found</p>
+        <p className="empty">No notifications found</p>
       ) : (
-        <ul>
+        <div className="list">
           {paginated.map((n) => (
-            <li key={n.ID}>
-              <b>{n.Type}</b> - {n.Message} ({n.Timestamp})
-            </li>
+            <div className="card" key={n.ID}>
+              <div
+                className="tag"
+                style={{ backgroundColor: getTypeColor(n.Type) }}
+              >
+                {n.Type}
+              </div>
+
+              <div className="content">
+                <p className="message">{n.Message}</p>
+                <span className="time">{n.Timestamp}</span>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
 
-      {/* PAGINATION */}
-      <div style={{ marginTop: "10px" }}>
+      <div className="pagination">
         <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-          Prev
+          ⬅ Prev
         </button>
 
-        <span style={{ margin: "0 10px" }}>Page {page}</span>
+        <span>Page {page}</span>
 
         <button
           disabled={start + ITEMS_PER_PAGE >= filtered.length}
           onClick={() => setPage(page + 1)}
         >
-          Next
+          Next ➡
         </button>
       </div>
     </div>
