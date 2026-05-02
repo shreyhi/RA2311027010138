@@ -16,7 +16,8 @@ function App() {
     try {
       const data = await fetchNotifications();
 
-      const notificationsArray = data?.notifications || [];
+      // api.js already returns the notifications array
+      const notificationsArray = Array.isArray(data) ? data : [];
 
       console.log("Notifications Array:", notificationsArray);
 
